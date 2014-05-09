@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 
+class CardSprite;
+
 class HelloWorld : public cocos2d::Layer
 {
 public:
@@ -29,6 +31,9 @@ public:
 private:
     //CC: touch point
     int beginX, beginY, endX, endY;
+    //CC: create card
+    void createCardSprite(cocos2d::Size size);
+    CardSprite* cards[4][4];
 };
 
 #endif // __HELLOWORLD_SCENE_H__

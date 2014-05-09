@@ -7,7 +7,9 @@
 //
 
 #include "CardSprite.h"
-using namespace cocos2d;
+USING_NS_CC;
+
+static int CARD_PADDING = 15;
 
 CardSprite* CardSprite::createCardSprite(int number, int width, int height, float cardX, float cardY) {
     auto birthCard = new CardSprite();
@@ -35,7 +37,7 @@ void CardSprite::birthCardInit(int number, int width, int height, float cardX, f
     this->number = number;
 
     //CC: create background
-    layerBG = LayerColor::create(Color4B(200, 190, 180, 255), width - 15, height - 15);
+    layerBG = LayerColor::create(Color4B(200, 190, 180, 255), width - CARD_PADDING, height - CARD_PADDING);
     layerBG->setPosition(Point(cardX, cardY));
 
     //CC: add label to bg
