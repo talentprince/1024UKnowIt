@@ -57,8 +57,8 @@ bool HelloWorld::init() {
     createCardSprite(visibleSize, scoreLabelName->getBoundingBox().size.height);
 
     //CC: generate card
-    autoBirth();
-    autoBirth();
+//    autoBirth();
+//    autoBirth();
 
     return true;
 }
@@ -71,7 +71,7 @@ void HelloWorld::createCardSprite(cocos2d::Size size, int labelHeight) {
     //create card for each unit
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            CardSprite* card = CardSprite::createCardSprite(0, unitSize, unitSize, unitSize * i + marginLeft, unitSize * j + UNIT_MARGIN);
+            CardSprite* card = CardSprite::createCardSprite(256, unitSize, unitSize, unitSize * i + marginLeft, unitSize * j + UNIT_MARGIN);
             this->addChild(card);
             cards[i][j] = card;
         }
