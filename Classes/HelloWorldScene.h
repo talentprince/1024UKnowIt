@@ -32,8 +32,18 @@ private:
     //CC: touch point
     int beginX, beginY, endX, endY;
     //CC: create card
-    void createCardSprite(cocos2d::Size size);
+    void createCardSprite(cocos2d::Size size, int labelHeight);
+    //CC: auto birth
+    void autoBirth();
+    //CC: check over
+    void checkOver();
+
+    //CC: card save
     CardSprite* cards[4][4];
+    //CC: score and score label
+    int score;
+    cocos2d::LabelTTF* scoreLabel;
+    void gotScore(int score);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

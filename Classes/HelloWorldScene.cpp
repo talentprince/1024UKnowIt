@@ -42,25 +42,74 @@ bool HelloWorld::init() {
     //CC: set bg
     this->addChild(LayerColor::create(Color4B(180, 170, 160, 255)));
 
+    //CC: visible size
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    //CC: add score label
+    auto scoreLabelName = LabelTTF::create("SCORE", "HiraKakuProN-W6", 80);
+    scoreLabelName->setPosition(Point(visibleSize.width/3, visibleSize.height - UNIT_MARGIN));
+    this->addChild(scoreLabelName);
+    scoreLabel = LabelTTF::create("0", "HiraKakuProN-W6", 80);
+    scoreLabel->setPosition(Point(visibleSize.width/3 + scoreLabelName->getBoundingBox().size.width + UNIT_MARGIN, visibleSize.height - UNIT_MARGIN));
+    this->addChild(scoreLabel);
+
     //CC: create card
-    createCardSprite(Director::getInstance()->getVisibleSize());
+    createCardSprite(visibleSize, scoreLabelName->getBoundingBox().size.height);
+
+    //CC: generate card
+    autoBirth();
+    autoBirth();
 
     return true;
 }
 
-void HelloWorld::createCardSprite(cocos2d::Size size) {
+void HelloWorld::createCardSprite(cocos2d::Size size, int labelHeight) {
     //calculate unit w and h
-    int unitSize = (size.height - UNIT_MARGIN)/4;
+    int unitSize = (size.height - labelHeight)/4;
     //calculate margin left
-    int marginLeft = (abs(size.width - size.height + UNIT_MARGIN))/2;
+    int marginLeft = (abs(size.width - size.height + labelHeight))/2;
     //create card for each unit
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            CardSprite* card = CardSprite::createCardSprite(8, unitSize, unitSize, unitSize * i + marginLeft, unitSize * j + UNIT_MARGIN);
+            CardSprite* card = CardSprite::createCardSprite(0, unitSize, unitSize, unitSize * i + marginLeft, unitSize * j + UNIT_MARGIN);
             this->addChild(card);
             cards[i][j] = card;
         }
     }
+}
+
+void HelloWorld::gotScore(int score) {
+    this->score += score;
+    scoreLabel->setString(String::createWithFormat("%i", this->score)->getCString());
+}
+
+void HelloWorld::autoBirth() {
+    int i = CCRANDOM_0_1() * 4;
+    int j = CCRANDOM_0_1() * 4;
+    //if already has birth again
+    if(cards[i][j]->getNumber() > 0) {
+        autoBirth();
+    } else {
+        cards[i][j]->setNumber(CCRANDOM_0_1() < 1 ? 2 : 4);
+    }
+}
+
+void HelloWorld::checkOver() {
+    bool over = true;
+    for (int y = 0; y < 4 && over; y++) {
+        for(int x = 0; x < 4 && over; x++)
+            if(cards[x][y]->getNumber() == 0 ||
+               (x>0 && cards[x][y]->getNumber() == cards[x-1][y]->getNumber())||
+               (x<3 && cards[x][y]->getNumber() == cards[x+1][y]->getNumber())||
+               (y>0 && cards[x][y]->getNumber() == cards[x][y-1]->getNumber())||
+               (y<3 && cards[x][y]->getNumber() == cards[x][y+1]->getNumber())) {
+                over = false;
+            }
+        }
+    if(over) {
+        Director::getInstance()->replaceScene(TransitionFade::create(1, HelloWorld::createScene()));
+    }
+    
 }
 
 bool HelloWorld::onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event) {
@@ -76,41 +125,55 @@ void HelloWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_even
     auto touchPoint = touch->getLocation();
     endX = beginX - touchPoint.x;
     endY = beginY - touchPoint.y;
+    //CC: move?
+    bool move = false;
 
     //CC: figure direction
     if (abs(endX) > abs(endY)) {
         if(endX > 0)
-            doLeft();
+            move = doLeft();
         else
-            doRight();
+            move = doRight();
     } else {
         if(endY > 0)
-            doDown();
+            move = doDown();
         else
-            doUp();
+            move= doUp();
+    }
+    //CC: if moved, birth one card and check over
+    if(move){
+        autoBirth();
+        checkOver();
     }
 }
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event) {
+    //CC: move?
+    bool move = false;
     switch (keyCode) {
         case EventKeyboard::KeyCode::KEY_LEFT_ARROW: {
-            doLeft();
+            move = doLeft();
             break;
         }
         case EventKeyboard::KeyCode::KEY_RIGHT_ARROW: {
-            doRight();
+            move = doRight();
             break;
         }
         case EventKeyboard::KeyCode::KEY_UP_ARROW: {
-            doUp();
+            move = doUp();
             break;
         }
         case EventKeyboard::KeyCode::KEY_DOWN_ARROW: {
-            doDown();
+            move = doDown();
             break;
         }
         default:
             break;
+    }
+    //CC: if moved, birth one card and check over
+    if(move){
+        autoBirth();
+        checkOver();
     }
 }
 
@@ -133,6 +196,8 @@ bool HelloWorld::doLeft() {
                         //the same, combine
                         cards[x][y]->setNumber(cards[x][y]->getNumber() * 2);
                         cards[right][y]->setNumber(0);
+                        //score!!!!
+                        gotScore(cards[x][y]->getNumber());
                         move = true;
                     }
                     //one move one merge
@@ -163,6 +228,8 @@ bool HelloWorld::doRight() {
                         //the same, combine
                         cards[x][y]->setNumber(cards[x][y]->getNumber() * 2);
                         cards[left][y]->setNumber(0);
+                        //score!!!!
+                        gotScore(cards[x][y]->getNumber());
                         move = true;
                     }
                     //one move one merge
@@ -193,6 +260,8 @@ bool HelloWorld::doUp() {
                         //the same, combine
                         cards[x][y]->setNumber(cards[x][y]->getNumber() * 2);
                         cards[x][below]->setNumber(0);
+                        //score!!!!
+                        gotScore(cards[x][y]->getNumber());
                         move = true;
                     }
                     //one move one merge
@@ -223,6 +292,8 @@ bool HelloWorld::doDown() {
                         //the same, combine
                         cards[x][y]->setNumber(cards[x][y]->getNumber() * 2);
                         cards[x][above]->setNumber(0);
+                        //score!!!!
+                        gotScore(cards[x][y]->getNumber());
                         move = true;
                     }
                     //one move one merge
