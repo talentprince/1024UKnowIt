@@ -63,7 +63,7 @@ void CardSprite::setNumber(int number) {
 
     //CC: small font big score
     if(number >= 1024){
-        numberLabel->setFontSize(50);
+        numberLabel->setFontSize(55);
     }else if(number >= 128){
         numberLabel->setFontSize(70);
     }else if (number >= 16) {

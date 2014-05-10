@@ -1,17 +1,17 @@
-#include "HelloWorldScene.h"
+#include "WorldScene.h"
 #include "CardSprite.h"
 
 USING_NS_CC;
 
-//CC: double of CARD_PADDING
-static int UNIT_MARGIN = 30;
+//CC: double of CARD_PADDING + 10
+static int UNIT_MARGIN = 40;
 
-Scene* HelloWorld::createScene() {
+Scene* GameWorld::createScene() {
     // 'scene' is an autorelease object
     auto scene = Scene::create();
 
     // 'layer' is an autorelease object
-    auto layer = HelloWorld::create();
+    auto layer = GameWorld::create();
 
     // add layer as a child to scene
     scene->addChild(layer);
@@ -21,7 +21,7 @@ Scene* HelloWorld::createScene() {
 }
 
 // on "init" you need to initialize your instance
-bool HelloWorld::init() {
+bool GameWorld::init() {
     //////////////////////////////
     // 1. super init first
     if (!Layer::init()) {
@@ -30,13 +30,13 @@ bool HelloWorld::init() {
 
     //CC: bind touch listener
     auto touchListener = EventListenerTouchOneByOne::create();
-    touchListener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
-    touchListener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
+    touchListener->onTouchBegan = CC_CALLBACK_2(GameWorld::onTouchBegan, this);
+    touchListener->onTouchEnded = CC_CALLBACK_2(GameWorld::onTouchEnded, this);
     getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
 
     //CC: bind keyboard listener
     auto keyboardListener = EventListenerKeyboard::create();
-    keyboardListener->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
+    keyboardListener->onKeyPressed = CC_CALLBACK_2(GameWorld::onKeyPressed, this);
     getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyboardListener, this);
 
     //CC: set bg
@@ -47,43 +47,44 @@ bool HelloWorld::init() {
 
     //CC: add score label
     auto scoreLabelName = LabelTTF::create("SCORE", "HiraKakuProN-W6", 80);
-    scoreLabelName->setPosition(Point(visibleSize.width/3, visibleSize.height - UNIT_MARGIN));
+    scoreLabelName->setPosition(Point(visibleSize.width/3, UNIT_MARGIN));
     this->addChild(scoreLabelName);
     scoreLabel = LabelTTF::create("0", "HiraKakuProN-W6", 80);
-    scoreLabel->setPosition(Point(visibleSize.width/3 + scoreLabelName->getBoundingBox().size.width + UNIT_MARGIN, visibleSize.height - UNIT_MARGIN));
+    scoreLabel->setPosition(Point(visibleSize.width/3 + scoreLabelName->getBoundingBox().size.width + UNIT_MARGIN, UNIT_MARGIN));
     this->addChild(scoreLabel);
 
     //CC: create card
     createCardSprite(visibleSize, scoreLabelName->getBoundingBox().size.height);
 
     //CC: generate card
-//    autoBirth();
-//    autoBirth();
+    autoBirth();
+    autoBirth();
 
     return true;
 }
 
-void HelloWorld::createCardSprite(cocos2d::Size size, int labelHeight) {
+void GameWorld::createCardSprite(cocos2d::Size size, int labelHeight) {
     //calculate unit w and h
-    int unitSize = (size.height - labelHeight)/4;
+    int unitSize = (MIN(size.height, size.width) - labelHeight)/4;
     //calculate margin left
-    int marginLeft = (abs(size.width - size.height + labelHeight))/2;
+    int marginLeft = (abs(size.width - 4 * unitSize))/2;
     //create card for each unit
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            CardSprite* card = CardSprite::createCardSprite(256, unitSize, unitSize, unitSize * i + marginLeft, unitSize * j + UNIT_MARGIN);
+            //CC: i j goes with gl cor
+            CardSprite* card = CardSprite::createCardSprite(0, unitSize, unitSize, unitSize * i + marginLeft, (size.height - unitSize * (3 - j) - labelHeight) - UNIT_MARGIN);
             this->addChild(card);
             cards[i][j] = card;
         }
     }
 }
 
-void HelloWorld::gotScore(int score) {
+void GameWorld::gotScore(int score) {
     this->score += score;
     scoreLabel->setString(String::createWithFormat("%i", this->score)->getCString());
 }
 
-void HelloWorld::autoBirth() {
+void GameWorld::autoBirth() {
     int i = CCRANDOM_0_1() * 4;
     int j = CCRANDOM_0_1() * 4;
     //if already has birth again
@@ -94,7 +95,7 @@ void HelloWorld::autoBirth() {
     }
 }
 
-void HelloWorld::checkOver() {
+void GameWorld::checkOver() {
     bool over = true;
     for (int y = 0; y < 4 && over; y++) {
         for(int x = 0; x < 4 && over; x++)
@@ -107,12 +108,12 @@ void HelloWorld::checkOver() {
             }
         }
     if(over) {
-        Director::getInstance()->replaceScene(TransitionFade::create(1, HelloWorld::createScene()));
+        Director::getInstance()->replaceScene(TransitionFade::create(1, GameWorld::createScene()));
     }
     
 }
 
-bool HelloWorld::onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event) {
+bool GameWorld::onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event) {
     //CC: get beginning touch point
     auto touchPoint = touch->getLocation();
     beginX = touchPoint.x;
@@ -120,7 +121,7 @@ bool HelloWorld::onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_even
     return true;
 }
 
-void HelloWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_event) {
+void GameWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_event) {
     //CC: get move direction
     auto touchPoint = touch->getLocation();
     endX = beginX - touchPoint.x;
@@ -147,7 +148,7 @@ void HelloWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_even
     }
 }
 
-void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event) {
+void GameWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event) {
     //CC: move?
     bool move = false;
     switch (keyCode) {
@@ -177,7 +178,7 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::
     }
 }
 
-bool HelloWorld::doLeft() {
+bool GameWorld::doLeft() {
     bool move = false;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
@@ -209,7 +210,7 @@ bool HelloWorld::doLeft() {
     return move;
 }
 
-bool HelloWorld::doRight() {
+bool GameWorld::doRight() {
     bool move = false;
     for (int y = 0; y < 4; y++) {
        for (int x = 3; x >= 0; x--) {
@@ -241,7 +242,7 @@ bool HelloWorld::doRight() {
     return move;
 }
 
-bool HelloWorld::doUp() {
+bool GameWorld::doUp() {
     bool move = false;
     for (int x = 0; x < 4; x++) {
         for (int y = 3; y > 0; y--) {
@@ -273,7 +274,7 @@ bool HelloWorld::doUp() {
     return move;
 }
 
-bool HelloWorld::doDown() {
+bool GameWorld::doDown() {
     bool move = false;
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
@@ -297,7 +298,8 @@ bool HelloWorld::doDown() {
                         move = true;
                     }
                     //one move one merge
-                    break;
+                    if(move)
+                        return move;
                 }
             }
         }

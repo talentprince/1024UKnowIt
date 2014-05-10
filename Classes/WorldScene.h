@@ -5,7 +5,7 @@
 
 class CardSprite;
 
-class HelloWorld : public cocos2d::Layer
+class GameWorld : public cocos2d::Layer
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -15,7 +15,7 @@ public:
     virtual bool init();
 
     // implement the "static create()" method manually
-    CREATE_FUNC(HelloWorld);
+    CREATE_FUNC(GameWorld);
 
     //CC: touch and keyboard event listener
     virtual bool onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event);
