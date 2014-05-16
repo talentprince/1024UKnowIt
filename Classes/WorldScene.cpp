@@ -298,8 +298,7 @@ bool GameWorld::doDown() {
                         move = true;
                     }
                     //one move one merge
-                    if(move)
-                        return move;
+                    break;
                 }
             }
         }
